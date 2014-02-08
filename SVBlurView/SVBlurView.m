@@ -9,7 +9,8 @@
 #import "SVBlurView.h"
 #import "UIImage+ImageEffects.h"
 
-NSString * const SVBlurViewImageKey = @"SVBlurViewImageKey";
+NSString *const SVBlurViewImageKey = @"SVBlurViewImageKey";
+
 
 @interface SVBlurView ()
 
@@ -18,41 +19,76 @@ NSString * const SVBlurViewImageKey = @"SVBlurViewImageKey";
 
 @implementation SVBlurView
 
-- (id)initWithFrame:(CGRect)frame {
-    if(self = [super initWithFrame:frame]) {
-        self.blurRadius = 20;
-        self.saturationDelta = 1.5;
-        self.tintColor = nil;
-        self.viewToBlur = nil;
-        self.clipsToBounds = YES;
+@synthesize viewToBlur = _viewToBlur;
+
+
+- (void)setup
+{
+    self.blurRadius = 20;
+    self.saturationDelta = 1.5;
+    self.tintColor = nil;
+    self.viewToBlur = nil;
+    self.clipsToBounds = YES;
+}
+
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+    [self setup];
+}
+
+
+- (id)initWithFrame:(CGRect)frame
+{
+    if (self = [super initWithFrame:frame])
+    {
+        [self setup];
     }
     return self;
 }
 
-- (void)encodeRestorableStateWithCoder:(NSCoder *)coder {
+
+- (void)encodeRestorableStateWithCoder:(NSCoder *)coder
+{
     [super encodeRestorableStateWithCoder:coder];
-    
-    [coder encodeObject:[UIImage imageWithCGImage:(CGImageRef)self.layer.contents] forKey:SVBlurViewImageKey];
+
+    [coder encodeObject:[UIImage imageWithCGImage:(CGImageRef) self.layer.contents] forKey:SVBlurViewImageKey];
 }
 
-- (void)decodeRestorableStateWithCoder:(NSCoder *)coder {
+
+- (void)decodeRestorableStateWithCoder:(NSCoder *)coder
+{
     [super decodeRestorableStateWithCoder:coder];
-    
-    self.layer.contents = (id)[[coder decodeObjectForKey:SVBlurViewImageKey] CGImage];
+
+    self.layer.contents = (id) [[coder decodeObjectForKey:SVBlurViewImageKey] CGImage];
 }
 
-- (UIView *)viewToBlur {
-    if(_viewToBlur)
+
+- (UIView *)viewToBlur
+{
+    if (_viewToBlur)
+    {
         return _viewToBlur;
+    }
     return self.superview;
 }
 
-- (void)updateBlur {
+
+- (void)setViewToBlur:(UIView *)viewToBlur
+{
+    _viewToBlur = viewToBlur;
+    [self updateBlur];
+}
+
+
+- (void)updateBlur
+{
     UIGraphicsBeginImageContextWithOptions(self.viewToBlur.bounds.size, NO, 0.0);
     [self.viewToBlur drawViewHierarchyInRect:self.viewToBlur.bounds afterScreenUpdates:NO];
     UIImage *complexViewImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    
+
     float scale = [UIScreen mainScreen].scale;
     CGRect translationRect = [self convertRect:self.bounds toView:self.viewToBlur];
     CGRect scaledSuperviewFrame = CGRectApplyAffineTransform(translationRect, CGAffineTransformMakeScale(scale, scale));
@@ -60,23 +96,29 @@ NSString * const SVBlurViewImageKey = @"SVBlurViewImageKey";
     UIImage *croppedImage = [UIImage imageWithCGImage:croppedImageRef scale:complexViewImage.scale orientation:complexViewImage.imageOrientation];
     UIImage *blurredImage = [self applyBlurToImage:croppedImage];
     CGImageRelease(croppedImageRef);
-    
-    self.layer.contents = (id)blurredImage.CGImage;
+
+    self.layer.contents = (id) blurredImage.CGImage;
 }
 
-- (UIImage *)applyBlurToImage:(UIImage *)image {
+
+- (UIImage *)applyBlurToImage:(UIImage *)image
+{
     return [image applyBlurWithRadius:self.blurRadius
                             tintColor:self.tintColor
                 saturationDeltaFactor:self.saturationDelta
                             maskImage:nil];
 }
 
-- (void)didMoveToSuperview {
-    if(self.superview && self.viewToBlur.superview) {
+
+- (void)didMoveToSuperview
+{
+    if (self.superview && self.viewToBlur.superview)
+    {
         self.backgroundColor = [UIColor clearColor];
         [self updateBlur];
     }
-    else if (!self.layer.contents) {
+    else if (!self.layer.contents)
+    {
         self.backgroundColor = [UIColor whiteColor];
     }
 }
