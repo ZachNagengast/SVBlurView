@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.platform = :ios, '7.0'
   s.license = 'MIT'
   s.author = { 'Sam Vermette' => 'hello@samvermette.com' }
-  s.source = { :git => 'https://github.com/kfinteractive/SVBlurView.git', :head }
+  s.source = { :git => 'https://github.com/kfinteractive/SVBlurView.git' }
   s.source_files = 'SVBlurView/*.{h,m}'
   s.framework = 'QuartzCore'
   s.requires_arc = true
